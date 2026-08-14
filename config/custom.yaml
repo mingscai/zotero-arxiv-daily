@@ -1,13 +1,27 @@
 zotero:
   user_id: ${oc.env:ZOTERO_ID}
   api_key: ${oc.env:ZOTERO_KEY}
-  include_path: null # Or set a list of glob patterns, e.g. ["2026/survey/**","2026/reading-group/**"]
+  include_path: null # 只用部分 collection 时改成 glob 列表，例如 ["LLM/**","Security/**"]
+  ignore_path: # 排除这些 collection，不参与推荐打分
+    - "APR"
+    - "APR/**"
+    - "FWI"
+    - "FWI/**"
+    - "SuPreME"
+    - "SuPreME/**"
+    - "PrismVul"
+    - "PrismVul/**"
+
+source:
+  arxiv:
+    category: ["cs.CL","cs.AI","cs.SE","cs.CR","cs.LG"]
+    include_cross_list: false # 改 true 会把 cross-list 论文也算进来，数量翻倍
 
 email:
   sender: ${oc.env:SENDER}
   receiver: ${oc.env:RECEIVER}
-  smtp_server: smtp.qq.com
-  smtp_port: 465
+  smtp_server: smtp.gmail.com
+  smtp_port: 587 # 用 587/STARTTLS，不要用 465
   sender_password: ${oc.env:SENDER_PASSWORD}
 
 llm:
@@ -15,12 +29,14 @@ llm:
     key: ${oc.env:OPENAI_API_KEY}
     base_url: ${oc.env:OPENAI_API_BASE}
   generation_kwargs:
-    model: gpt-4o-mini
-
-source:
-  arxiv:
-    category: ["cs.AI","cs.CV","cs.LG","cs.CL"]
+    model: deepseek-v4-flash
+    max_tokens: 8192 # 给 high 档的推理留足空间，否则正文可能被截断；上限不计费
+    reasoning_effort: high
+  language: Simplified Chinese
 
 executor:
   debug: ${oc.env:DEBUG,null}
+  send_empty: false
+  max_paper_num: 30
   source: ['arxiv']
+  reranker: local
